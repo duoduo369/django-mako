@@ -24,14 +24,15 @@ class MakoMiddleware(object):
         directories      = getattr(settings, 'MAKO_TEMPLATE_DIRS', settings.TEMPLATE_DIRS)
         module_directory = getattr(settings, 'MAKO_MODULE_DIR', tempfile.mkdtemp())
         output_encoding  = getattr(settings, 'MAKO_OUTPUT_ENCODING', 'utf-8')
+        input_encoding  = getattr(settings, 'MAKO_INPUT_ENCODING', 'utf-8')
         encoding_errors  = getattr(settings, 'MAKO_ENCODING_ERRORS', 'replace')
-        
+
         global lookup
-        lookup = TemplateLookup(directories=directories, 
+        lookup = TemplateLookup(directories=directories,
                                 module_directory=module_directory,
-                                output_encoding=output_encoding, 
+                                input_encoding=input_encoding,
+                                output_encoding=output_encoding,
                                 encoding_errors=encoding_errors,
                                 )
         import djangomako
         djangomako.lookup = lookup
-    
