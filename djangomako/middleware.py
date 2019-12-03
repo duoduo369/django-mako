@@ -1,38 +1,37 @@
-#   Copyright (c) 2008 Mikeal Rogers
-#
-#   Licensed under the Apache License, Version 2.0 (the "License");
-#   you may not use this file except in compliance with the License.
-#   You may obtain a copy of the License at
-#
-#       http://www.apache.org/licenses/LICENSE-2.0
-#
-#   Unless required by applicable law or agreed to in writing, software
-#   distributed under the License is distributed on an "AS IS" BASIS,
-#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#   See the License for the specific language governing permissions and
-#   limitations under the License.
-
+# -*- coding: utf-8 -*-
 from mako.lookup import TemplateLookup
 import tempfile
 
 class MakoMiddleware(object):
-    def __init__(self):
+
+    def __init__(self, get_response):
         """Setup mako variables and lookup object"""
+        self.get_response = get_response
         from django.conf import settings
         # Set all mako variables based on django settings
         global template_dirs, output_encoding, module_directory, encoding_errors
-        directories      = getattr(settings, 'MAKO_TEMPLATE_DIRS', settings.TEMPLATE_DIRS)
+        TEMPLATE_DIRS = settings.TEMPLATES[0]['DIRS']
+        directories      = getattr(settings, 'MAKO_TEMPLATE_DIRS', TEMPLATE_DIRS)
         module_directory = getattr(settings, 'MAKO_MODULE_DIR', tempfile.mkdtemp())
         output_encoding  = getattr(settings, 'MAKO_OUTPUT_ENCODING', 'utf-8')
-        input_encoding  = getattr(settings, 'MAKO_INPUT_ENCODING', 'utf-8')
         encoding_errors  = getattr(settings, 'MAKO_ENCODING_ERRORS', 'replace')
 
         global lookup
         lookup = TemplateLookup(directories=directories,
                                 module_directory=module_directory,
-                                input_encoding=input_encoding,
                                 output_encoding=output_encoding,
                                 encoding_errors=encoding_errors,
                                 )
         import djangomako
         djangomako.lookup = lookup
+
+    def __call__(self, request):
+        # Code to be executed for each request before
+        # the view (and later middleware) are called.
+
+        response = self.get_response(request)
+
+        # Code to be executed for each request/response after
+        # the view is called.
+
+        return response
